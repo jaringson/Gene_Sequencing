@@ -4,6 +4,19 @@ using System.Text;
 
 namespace GeneticsLab
 {
+    enum operation { InDel, Sub, Match, first};
+    class Node
+    {
+        public Node prev { get; set; }
+        public operation op { get; set; }
+        public int value { get; set; }
+        public Node(Node Prev, operation op, int value)
+        {
+            this.prev = prev;
+            this.op = op;
+            this.value = value;
+        }
+    }
     class PairWiseAlign
     {
         int MaxCharactersToAlign;
@@ -34,13 +47,103 @@ namespace GeneticsLab
             int score;                                                       // place your computed alignment score here
             string[] alignment = new string[2];                              // place your two computed alignments here
 
+            int sizeA = MaxCharactersToAlign;
+            int sizeB = MaxCharactersToAlign;
+
+            if (sequenceA.Sequence.Length < MaxCharactersToAlign) sizeA = sequenceA.Sequence.Length;
+            if (sequenceB.Sequence.Length < MaxCharactersToAlign) sizeB = sequenceB.Sequence.Length;
+
+            if (sequenceA == sequenceB)
+            {
+                score = -3 *sizeA;
+                alignment[0] = sequenceA.Sequence;
+                alignment[1] = sequenceB.Sequence;
+                // ***************************************************************************************
+
+
+                result.Update(score, alignment[0], alignment[1]);                  // bundling your results into the right object type 
+                return (result);
+            }
+
+            List<List<Node>> nodes = new List<List<Node>>();
+            for (int i = 0; i < sizeA+1; i++)
+            {
+                for(int j = 0; j < sizeB+1; j++)
+                {
+                    if(i == 0)
+                    {
+                        if(j == 0)
+                        {
+                            nodes.Add(new List<Node>());
+                            nodes[i].Add(new Node(null, operation.first, 0));
+                        }
+                        else
+                        {
+                            nodes[i].Add(new Node(nodes[i][j - 1], operation.InDel, nodes[i][j-1].value + 5));
+                        }
+                    }
+                    else if(j == 0)
+                    {
+                        nodes.Add(new List<Node>());
+                        nodes[i].Add(new Node(nodes[i-1][j], operation.InDel, nodes[i-1][j].value + 5));
+                    }
+                    else
+                    {
+                        
+                        int min_match;
+                        int min_InDel_top;
+                        int min_InDel_left;
+                        int min_sub;
+                        if(sequenceA.Sequence[i-1] == sequenceB.Sequence[j-1])
+                        {
+                            min_match = nodes[i - 1][j - 1].value - 3;
+                            
+                        }
+                        else
+                        {
+                            min_match = int.MaxValue;
+                        }
+                        min_InDel_top = nodes[i - 1][j].value + 5;
+                        min_InDel_left = nodes[i][j - 1].value + 5;
+                        min_sub = nodes[i - 1][j - 1].value + 1;
+
+                        if(min_match < min_InDel_top && min_match < min_InDel_left && min_match < min_sub)
+                        {
+                            nodes[i].Add(new Node(nodes[i - 1][j - 1], operation.Match, min_match));
+                        }
+                        else if(min_sub < min_match && min_sub < min_InDel_top && min_sub < min_InDel_left)
+                        {
+                            nodes[i].Add(new Node(nodes[i - 1][j - 1], operation.Sub, min_sub));
+                        }
+                        else if(min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
+                        {
+                            nodes[i].Add(new Node(nodes[i - 1][j], operation.InDel, min_InDel_top));
+                        }
+                        else
+                        {
+                            nodes[i].Add(new Node(nodes[i][j - 1], operation.InDel, min_InDel_left));
+                        }
+                        
+                    }
+                }
+            }
+
+            /*for (int i = 0; i < sizeA+1; i++)
+            {
+                for (int j = 0; j < sizeB+1; j++)
+                {
+                    Console.Write(nodes[i][j].value + " ");
+                  
+                }
+                Console.WriteLine();
+            }*/
 
             // ********* these are placeholder assignments that you'll replace with your code  *******
-            score = 0;                                                
-            alignment[0] = "";
-            alignment[1] = "";
+            score = nodes[sizeA][sizeB].value;                                                
+            alignment[0] = sequenceA.Sequence;
+            alignment[1] = "fg";
             // ***************************************************************************************
-            
+
 
             result.Update(score,alignment[0],alignment[1]);                  // bundling your results into the right object type 
             return(result);
