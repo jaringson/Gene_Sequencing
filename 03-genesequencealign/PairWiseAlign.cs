@@ -65,7 +65,7 @@ namespace GeneticsLab
                 return (result);
             }
 
-            List<List<Node>> nodes = new List<List<Node>>();
+            List<List<int>> nodes = new List<List<int>>();
             for (int i = 0; i < sizeA+1; i++)
             {
                 for(int j = 0; j < sizeB+1; j++)
@@ -74,18 +74,18 @@ namespace GeneticsLab
                     {
                         if(j == 0)
                         {
-                            nodes.Add(new List<Node>());
-                            nodes[i].Add(new Node(null, operation.first, 0));
+                            nodes.Add(new List<int>());
+                            nodes[i].Add(0);
                         }
                         else
                         {
-                            nodes[i].Add(new Node(nodes[i][j - 1], operation.InDel, nodes[i][j-1].value + 5));
+                            nodes[i].Add(nodes[i][j-1] + 5);
                         }
                     }
                     else if(j == 0)
                     {
-                        nodes.Add(new List<Node>());
-                        nodes[i].Add(new Node(nodes[i-1][j], operation.InDel, nodes[i-1][j].value + 5));
+                        nodes.Add(new List<int>());
+                        nodes[i].Add(nodes[i-1][j] + 5);
                     }
                     else
                     {
@@ -96,32 +96,32 @@ namespace GeneticsLab
                         int min_sub;
                         if(sequenceA.Sequence[i-1] == sequenceB.Sequence[j-1])
                         {
-                            min_match = nodes[i - 1][j - 1].value - 3;
+                            min_match = nodes[i - 1][j - 1] - 3;
                             
                         }
                         else
                         {
                             min_match = int.MaxValue;
                         }
-                        min_InDel_top = nodes[i - 1][j].value + 5;
-                        min_InDel_left = nodes[i][j - 1].value + 5;
-                        min_sub = nodes[i - 1][j - 1].value + 1;
+                        min_InDel_top = nodes[i - 1][j] + 5;
+                        min_InDel_left = nodes[i][j - 1] + 5;
+                        min_sub = nodes[i - 1][j - 1] + 1;
 
-                        if(min_match < min_InDel_top && min_match < min_InDel_left && min_match < min_sub)
+                        if(min_match <= min_InDel_top && min_match <= min_InDel_left && min_match < min_sub)
                         {
-                            nodes[i].Add(new Node(nodes[i - 1][j - 1], operation.Match, min_match));
+                            nodes[i].Add(min_match);
                         }
-                        else if(min_sub < min_match && min_sub < min_InDel_top && min_sub < min_InDel_left)
+                        else if(min_sub < min_match && min_sub <= min_InDel_top && min_sub <= min_InDel_left)
                         {
-                            nodes[i].Add(new Node(nodes[i - 1][j - 1], operation.Sub, min_sub));
+                            nodes[i].Add(min_sub);
                         }
                         else if(min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
                         {
-                            nodes[i].Add(new Node(nodes[i - 1][j], operation.InDel, min_InDel_top));
+                            nodes[i].Add(min_InDel_top);
                         }
                         else
                         {
-                            nodes[i].Add(new Node(nodes[i][j - 1], operation.InDel, min_InDel_left));
+                            nodes[i].Add(min_InDel_left);
                         }
                         
                     }
@@ -139,9 +139,9 @@ namespace GeneticsLab
             }*/
 
             // ********* these are placeholder assignments that you'll replace with your code  *******
-            score = nodes[sizeA][sizeB].value;                                                
+            score = nodes[sizeA][sizeB];                                                
             alignment[0] = sequenceA.Sequence;
-            alignment[1] = "fg";
+            alignment[1] = sequenceB.Sequence;
             // ***************************************************************************************
 
 
