@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GeneticsLab
 {
-    enum operation { InDel, Sub, Match, first};
+    enum operation { Top, Left, Sub, Match, first};
     class Node
     {
         public Node prev { get; set; }
@@ -66,6 +66,7 @@ namespace GeneticsLab
             }
 
             int[,] nodes = new int[sizeA+1,sizeB+1];
+            operation[,] prevs = new operation[sizeA + 1, sizeB + 1];
             for (int i = 0; i < sizeA+1; i++)
             {
                 for(int j = 0; j < sizeB+1; j++)
@@ -109,21 +110,49 @@ namespace GeneticsLab
                         if(min_match <= min_InDel_top && min_match <= min_InDel_left && min_match < min_sub)
                         {
                             nodes[i,j] = min_match;
+                            prevs[i, j] = operation.Match;
                         }
                         else if(min_sub < min_match && min_sub <= min_InDel_top && min_sub <= min_InDel_left)
                         {
                             nodes[i,j] = min_sub;
+                            prevs[i, j] = operation.Sub;
                         }
                         else if(min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
                         {
                             nodes[i,j] = min_InDel_top;
+                            prevs[i, j] = operation.Top;
                         }
                         else
                         {
                             nodes[i,j] = min_InDel_left;
+                            prevs[i, j] = operation.Left;
                         }
                         
                     }
+                }
+            }
+            int countA = sizeA-1;
+            int countB = sizeB-1;
+            while (countA >= 0 && countB >= 0)
+            {
+                if (prevs[countA, countB] == operation.Match || prevs[countA, countB] == operation.Sub)
+                {
+                    alignment[0] = sequenceA.Sequence[countA] + alignment[0];
+                    alignment[1] = sequenceB.Sequence[countB] + alignment[1];
+                    countA--;
+                    countB--;
+                }
+                else if (prevs[countA, countB] == operation.Left)
+                {
+                    alignment[0] = sequenceA.Sequence[countA] + alignment[0];
+                    alignment[1] = '-' + alignment[1];
+                    countA--;
+                }
+                else
+                {
+                    alignment[0] = '-' + alignment[0];
+                    alignment[1] = sequenceB.Sequence[countB] + alignment[1];
+                    countB--;
                 }
             }
 
@@ -139,8 +168,8 @@ namespace GeneticsLab
 
             // ********* these are placeholder assignments that you'll replace with your code  *******
             score = nodes[sizeA,sizeB];                                                
-            alignment[0] = sequenceA.Sequence;
-            alignment[1] = sequenceB.Sequence;
+            //alignment[0] = sequenceA.Sequence;
+            //alignment[1] = sequenceB.Sequence;
             // ***************************************************************************************
 
 
