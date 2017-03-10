@@ -65,7 +65,7 @@ namespace GeneticsLab
                 return (result);
             }
 
-            List<List<int>> nodes = new List<List<int>>();
+            int[,] nodes = new int[sizeA+1,sizeB+1];
             for (int i = 0; i < sizeA+1; i++)
             {
                 for(int j = 0; j < sizeB+1; j++)
@@ -74,18 +74,17 @@ namespace GeneticsLab
                     {
                         if(j == 0)
                         {
-                            nodes.Add(new List<int>());
-                            nodes[i].Add(0);
+                            
+                            nodes[i,j] = 0;
                         }
                         else
                         {
-                            nodes[i].Add(nodes[i][j-1] + 5);
+                            nodes[i,j] = nodes[i,j-1] + 5;
                         }
                     }
                     else if(j == 0)
                     {
-                        nodes.Add(new List<int>());
-                        nodes[i].Add(nodes[i-1][j] + 5);
+                        nodes[i,j] = nodes[i-1,j] + 5;
                     }
                     else
                     {
@@ -96,32 +95,32 @@ namespace GeneticsLab
                         int min_sub;
                         if(sequenceA.Sequence[i-1] == sequenceB.Sequence[j-1])
                         {
-                            min_match = nodes[i - 1][j - 1] - 3;
+                            min_match = nodes[i - 1,j - 1] - 3;
                             
                         }
                         else
                         {
                             min_match = int.MaxValue;
                         }
-                        min_InDel_top = nodes[i - 1][j] + 5;
-                        min_InDel_left = nodes[i][j - 1] + 5;
-                        min_sub = nodes[i - 1][j - 1] + 1;
+                        min_InDel_top = nodes[i - 1,j] + 5;
+                        min_InDel_left = nodes[i,j - 1] + 5;
+                        min_sub = nodes[i - 1,j - 1] + 1;
 
                         if(min_match <= min_InDel_top && min_match <= min_InDel_left && min_match < min_sub)
                         {
-                            nodes[i].Add(min_match);
+                            nodes[i,j] = min_match;
                         }
                         else if(min_sub < min_match && min_sub <= min_InDel_top && min_sub <= min_InDel_left)
                         {
-                            nodes[i].Add(min_sub);
+                            nodes[i,j] = min_sub;
                         }
                         else if(min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
                         {
-                            nodes[i].Add(min_InDel_top);
+                            nodes[i,j] = min_InDel_top;
                         }
                         else
                         {
-                            nodes[i].Add(min_InDel_left);
+                            nodes[i,j] = min_InDel_left;
                         }
                         
                     }
@@ -139,7 +138,7 @@ namespace GeneticsLab
             }*/
 
             // ********* these are placeholder assignments that you'll replace with your code  *******
-            score = nodes[sizeA][sizeB];                                                
+            score = nodes[sizeA,sizeB];                                                
             alignment[0] = sequenceA.Sequence;
             alignment[1] = sequenceB.Sequence;
             // ***************************************************************************************
