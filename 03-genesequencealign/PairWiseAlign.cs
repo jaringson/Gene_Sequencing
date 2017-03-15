@@ -67,91 +67,100 @@ namespace GeneticsLab
 
             int[,] nodes = new int[sizeA+1,sizeB+1];
             operation[,] prevs = new operation[sizeA + 1, sizeB + 1];
-            for (int i = 0; i < sizeA+1; i++)
-            {
-                for(int j = 0; j < sizeB+1; j++)
-                {
-                    if(i == 0)
-                    {
-                        if(j == 0)
-                        {
-                            
-                            nodes[i,j] = 0;
-                        }
-                        else
-                        {
-                            nodes[i,j] = nodes[i,j-1] + 5;
-                        }
-                    }
-                    else if(j == 0)
-                    {
-                        nodes[i,j] = nodes[i-1,j] + 5;
-                    }
-                    else
-                    {
-                        
-                        int min_match;
-                        int min_InDel_top;
-                        int min_InDel_left;
-                        int min_sub;
-                        if(sequenceA.Sequence[i-1] == sequenceB.Sequence[j-1])
-                        {
-                            min_match = nodes[i - 1,j - 1] - 3;
-                            
-                        }
-                        else
-                        {
-                            min_match = int.MaxValue;
-                        }
-                        min_InDel_top = nodes[i - 1,j] + 5;
-                        min_InDel_left = nodes[i,j - 1] + 5;
-                        min_sub = nodes[i - 1,j - 1] + 1;
 
-                        if(min_match <= min_InDel_top && min_match <= min_InDel_left && min_match < min_sub)
+            if (banded)
+            {
+                banded_algorithm(ref nodes, ref prevs, sizeA, sizeB, sequenceA, sequenceB);
+            }
+            else
+            {
+                for (int i = 0; i < sizeA + 1; i++)
+                {
+                    for (int j = 0; j < sizeB + 1; j++)
+                    {
+                        if (i == 0)
                         {
-                            nodes[i,j] = min_match;
-                            prevs[i, j] = operation.Match;
+                            if (j == 0)
+                            {
+
+                                nodes[i, j] = 0;
+                            }
+                            else
+                            {
+                                nodes[i, j] = nodes[i, j - 1] + 5;
+                            }
                         }
-                        else if(min_sub < min_match && min_sub <= min_InDel_top && min_sub <= min_InDel_left)
+                        else if (j == 0)
                         {
-                            nodes[i,j] = min_sub;
-                            prevs[i, j] = operation.Sub;
-                        }
-                        else if(min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
-                        {
-                            nodes[i,j] = min_InDel_top;
-                            prevs[i, j] = operation.Top;
+                            nodes[i, j] = nodes[i - 1, j] + 5;
                         }
                         else
                         {
-                            nodes[i,j] = min_InDel_left;
-                            prevs[i, j] = operation.Left;
+
+                            int min_match;
+                            int min_InDel_top;
+                            int min_InDel_left;
+                            int min_sub;
+                            if (sequenceA.Sequence[i - 1] == sequenceB.Sequence[j - 1])
+                            {
+                                min_match = nodes[i - 1, j - 1] - 3;
+
+                            }
+                            else
+                            {
+                                min_match = int.MaxValue;
+                            }
+                            min_InDel_top = nodes[i - 1, j] + 5;
+                            min_InDel_left = nodes[i, j - 1] + 5;
+                            min_sub = nodes[i - 1, j - 1] + 1;
+
+                            if (min_match <= min_InDel_top && min_match <= min_InDel_left && min_match <= min_sub)
+                            {
+                                nodes[i, j] = min_match;
+                                prevs[i, j] = operation.Match;
+                            }
+                            else if (min_sub < min_match && min_sub <= min_InDel_top && min_sub <= min_InDel_left)
+                            {
+                                nodes[i, j] = min_sub;
+                                prevs[i, j] = operation.Sub;
+                            }
+                            else if (min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
+                            {
+                                nodes[i, j] = min_InDel_top;
+                                prevs[i, j] = operation.Top;
+                            }
+                            else
+                            {
+                                nodes[i, j] = min_InDel_left;
+                                prevs[i, j] = operation.Left;
+                            }
+
                         }
-                        
                     }
                 }
             }
-            int countA = sizeA-1;
-            int countB = sizeB-1;
-            while (countA >= 0 && countB >= 0)
+            
+            int countA = sizeA;
+            int countB = sizeB;
+            while (countA > 0 && countB > 0)
             {
                 if (prevs[countA, countB] == operation.Match || prevs[countA, countB] == operation.Sub)
                 {
-                    alignment[0] = sequenceA.Sequence[countA] + alignment[0];
-                    alignment[1] = sequenceB.Sequence[countB] + alignment[1];
+                    alignment[0] = sequenceA.Sequence[countA-1] + alignment[0];
+                    alignment[1] = sequenceB.Sequence[countB-1] + alignment[1];
                     countA--;
                     countB--;
                 }
-                else if (prevs[countA, countB] == operation.Left)
+                else if (prevs[countA, countB] == operation.Top)
                 {
-                    alignment[0] = sequenceA.Sequence[countA] + alignment[0];
+                    alignment[0] = sequenceA.Sequence[countA-1] + alignment[0];
                     alignment[1] = '-' + alignment[1];
                     countA--;
                 }
                 else
                 {
                     alignment[0] = '-' + alignment[0];
-                    alignment[1] = sequenceB.Sequence[countB] + alignment[1];
+                    alignment[1] = sequenceB.Sequence[countB-1] + alignment[1];
                     countB--;
                 }
             }
@@ -175,6 +184,90 @@ namespace GeneticsLab
 
             result.Update(score,alignment[0],alignment[1]);                  // bundling your results into the right object type 
             return(result);
+        }
+
+        public void banded_algorithm(ref int[,] nodes, ref operation[,] prevs, int sizeA, int sizeB, GeneSequence sequenceA, GeneSequence sequenceB)
+        {
+            for (int i = 0; i < sizeA + 1; i++)
+            {
+                for (int j = 0; j < sizeB + 1; j++)
+                {
+                    if (j > i + 3) break;
+                    if (j < i - 3) continue;
+                   
+                    if (i == 0)
+                    {
+                        if (j == 0)
+                        {
+
+                            nodes[i, j] = 0;
+                        }
+                        else
+                        {
+                            nodes[i, j] = nodes[i, j - 1] + 5;
+                        }
+                    }
+                    else if (j == 0)
+                    {
+                        nodes[i, j] = nodes[i - 1, j] + 5;
+                    }
+                    else
+                    {
+                        int min_match;
+                        int min_InDel_top;
+                        int min_InDel_left;
+                        int min_sub;
+                        if (sequenceA.Sequence[i - 1] == sequenceB.Sequence[j - 1])
+                        {
+                            min_match = nodes[i - 1, j - 1] - 3;
+
+                        }
+                        else
+                        {
+                            min_match = int.MaxValue;
+                        }
+                        if(j > i-1 + 3)
+                        {
+                            min_InDel_top = int.MaxValue;
+                        }
+                        else
+                        {
+                            min_InDel_top = nodes[i - 1, j] + 5;
+                        }
+                        if(j-1 < i-3)
+                        {
+                            min_InDel_left = int.MaxValue;
+                        }
+                        else
+                        {
+                            min_InDel_left = nodes[i, j - 1] + 5;
+                        }
+                        min_sub = nodes[i - 1, j - 1] + 1;
+
+                        if (min_match <= min_InDel_top && min_match <= min_InDel_left && min_match <= min_sub)
+                        {
+                            nodes[i, j] = min_match;
+                            prevs[i, j] = operation.Match;
+                        }
+                        else if (min_sub < min_match && min_sub <= min_InDel_top && min_sub <= min_InDel_left)
+                        {
+                            nodes[i, j] = min_sub;
+                            prevs[i, j] = operation.Sub;
+                        }
+                        else if (min_InDel_top < min_match && min_InDel_top < min_sub && min_InDel_top < min_InDel_left)
+                        {
+                            nodes[i, j] = min_InDel_top;
+                            prevs[i, j] = operation.Top;
+                        }
+                        else
+                        {
+                            nodes[i, j] = min_InDel_left;
+                            prevs[i, j] = operation.Left;
+                        }
+                    }
+                }
+            }
+            
         }
     }
 }
